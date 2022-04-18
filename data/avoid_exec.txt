@@ -1,1 +1,2 @@
-
+Bug for unknown reason:
+- the folder would be read as an executable file in onedrive if all files in the folder are .gmt files.
