@@ -31,7 +31,7 @@ def generate_loader(train_data, val_data, test_data, batchsize):
     return train_loader, val_loader, test_loader
 
 
-def train(model, train_loader, test_loader, optimizor, adj, args):
+def train(model, train_loader, optimizor, adj, args):
 
     stats = dict(epoch=[], loss=[])
     best_loss = float('inf')
@@ -41,8 +41,8 @@ def train(model, train_loader, test_loader, optimizor, adj, args):
         # for batch_idx, (data, dataindex) in enumerate(train_loader)
         for batch in train_loader:
             optimizor.zero_grad()
-
-            z = model.encode(batch[0].view(-1,1), adj)
+            # print(batch[0].shape)
+            z = model.encode(batch[0].view(batch[0].shape[1],-1), adj)
             # print(z.shape)
             loss = model.recon_loss(z, adj)
 
@@ -52,11 +52,11 @@ def train(model, train_loader, test_loader, optimizor, adj, args):
         total_loss /= len(train_loader.dataset)
 
         if epoch % 10 == 0:
-            test_loss = test(test_loader, model, adj)
+            # test_loss = test(test_loader, model, adj)
             # print("Epoch {}. Loss: {:.4f}. Test accuracy: {:.4f}".format(
             #     epoch, total_loss, test_acc))
             stats["epoch"].append(epoch)
-            stats["loss"].append(test_loss)
+            stats["loss"].append(total_loss)
             # stats["acc"].append(test_acc)
         if total_loss < best_loss:
             best_loss = total_loss
