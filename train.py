@@ -23,7 +23,7 @@ def generate_loader(train_data, val_data, test_data, batchsize):
     test_data = torch.FloatTensor(test_data).to(device)
     
     dset_train = data.TensorDataset(train_data)
-    train_loader = data.DataLoader(dset_train, batch_size = batchsize, shuffle = True)
+    train_loader = data.DataLoader(dset_train, batch_size = batchsize, shuffle = False)
     dset_val = data.TensorDataset(val_data)
     val_loader = data.DataLoader(dset_val, batch_size = len(dset_val), shuffle = False)
     dset_test = data.TensorDataset(test_data)
@@ -42,9 +42,9 @@ def train(model, train_loader, optimizor, adj, args):
         for batch in train_loader:
             optimizor.zero_grad()
             # print(batch[0].shape)
-            z = model.encode(batch[0].view(batch[0].shape[1],-1), adj)
+            imp = model(batch[0].view(batch[0].shape[1],-1), adj)
             # print(z.shape)
-            loss = model.recon_loss(z, adj)
+            loss = model.loss(imp, batch[0])
 
             loss.backward()
             optimizor.step()
