@@ -6,7 +6,7 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.graphgym.config import cfg
 
 class GCN(torch.nn.Module):
-    def __init__(input_dim, hidden_dim, out_dim):
+    def __init__(self, input_dim, hidden_dim, out_dim):
         super().__init__()
         self.conv1 = GCNConv(input_dim, hidden_dim)
         self.conv3 = GCNConv(hidden_dim, out_dim)
