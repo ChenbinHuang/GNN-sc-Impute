@@ -43,8 +43,6 @@ class GAEncoder(torch.nn.Module):
         x = self.conv3(x, edge_index)
         # print(x.shape)
         return F.log_softmax(x, dim=1)
-    
-    def loss
 
 if __name__=='__main__':
     assert torch.cuda.is_available()
