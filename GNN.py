@@ -54,8 +54,13 @@ class GAEncoder_Decoder(torch.nn.Module):
         self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
         self.conv3 = GCNConv(hidden_dim, out_dim)
         self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
-        self.conv4 = torch.nn.Linear(out_dim, hidden_dim)
-        self.conv5 = torch.nn.Linear(hidden_dim, input_dim)
+
+        # self.conv4 = GCNConv(out_dim, hidden_dim)
+        self.lin4 = torch.nn.Linear(out_dim, hidden_dim)
+        # self.conv5 = GCNConv(hidden_dim, hidden_dim)
+        self.lin5 = torch.nn.Linear(hidden_dim, hidden_dim)
+        # self.conv6 = GCNConv(hidden_dim, input_dim)
+        self.lin6 = torch.nn.Linear(hidden_dim, input_dim)
 
     def encode(self, x, edge_index):
         x = self.conv1(x, edge_index) + self.lin1(x)
@@ -68,20 +73,23 @@ class GAEncoder_Decoder(torch.nn.Module):
         x = self.conv3(x, edge_index) + self.lin3(x)
         return F.log_softmax(x, dim=1)
     
-    def decode(self, z):
-        x = F.relu(z)
-        x = F.dropout(x, training=self.training)
-        x = self.conv4(x)
+    def decode(self, x, edge_index):
+        # x = F.relu(z)
+        # x = F.dropout(x, training=self.training)
+        x = self.lin4(x) #+ self.conv4(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
-        x = self.conv5(x)
+        x =  self.lin5(x) #+ self.conv5(x, edge_index)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        x = self.lin6(x) #+ self.conv6(x, edge_index) 
         return x
 
     def forward(self, x, edge_index):
         # x, edge_index = data.x, data.edge_index
         # print(x.shape, edge_index.shape)
         z = self.encode(x, edge_index)
-        imp = self.decode(z)
+        imp = self.decode(z, edge_index)
         # print(x.shape)
         return imp
     

@@ -40,6 +40,8 @@ def train(model, train_loader, optimizor, adj, args):
         model.train()
         # for batch_idx, (data, dataindex) in enumerate(train_loader)
         for batch in train_loader:
+            if batch[0].shape[0] != 32:
+                continue
             optimizor.zero_grad()
             # print(batch[0].shape)
             imp = model(batch[0].view(batch[0].shape[1],-1), adj)

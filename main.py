@@ -40,6 +40,8 @@ sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False,
 
 sc.pp.filter_cells(adata, min_genes=200) # min 200 genes detected 0.6%
 adata = adata[adata.obs.n_genes_by_counts < 2500, :] # not total read;
+sc.pp.normalize_total(adata, target_sum=1e4)
+sc.pp.log1p(adata)
 # adata = adata[adata.obs.pct_counts_mt < 5, :]
 
 alldata = adata.X
@@ -48,8 +50,8 @@ shuffle_index = np.random.permutation(alldata.shape[0])
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-args = {'dataset': 'cora', 'num_layers': 2, 'batch_size': alldata.shape[0], \
-    'hidden_dim': 64, 'out_dim':16, 'dropout': 0.5, 'epochs': 500, \
+args = {'dataset': 'cora', 'num_layers': 2, 'batch_size': 32, \
+    'hidden_dim': 64, 'out_dim':16, 'dropout': 0.5, 'epochs': 200, \
     'opt': 'adam', 'opt_scheduler': 'none', 'opt_restart': 0, 'weight_decay': 5e-3, \
     'lr': 1e-2}
 
@@ -84,6 +86,18 @@ est = model(train_data.view(train_data.shape[1],-1), idx)
 sum(sum(est.cpu().data.numpy() < 1e-3)) / (32738*2695)
 sum(sum(train_data < 1e-3)) / (32738*2695)
 
+imps = []
+for batch in train_loader:
+    if batch[0].shape[0] != 32:
+        continue
+    with torch.no_grad():
+        imps.append(model(batch[0].view(batch[0].shape[1],-1), idx))
+
+est = torch.cat(imps, dim=1)
+mtx = est.cpu().data.numpy().T
+standard_embedding = umap.UMAP(random_state=42).fit_transform(mtx)
+plt.scatter(standard_embedding[:, 0], standard_embedding[:, 1],c = labels ,s=1, cmap='Spectral')
+plt.show()
 
 # scanpy analysis
 # adata.raw = adata
